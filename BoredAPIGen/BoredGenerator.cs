@@ -11,9 +11,13 @@ using System.Windows.Forms;
 
 namespace BoredAPIGen
 {
-    public partial class Form1 : Form
+    public partial class GeneratorForm : Form
     {
-        public Form1()
+
+        BoredResponse currentActivity;
+        List<BoredResponse> SavedActivities = new List<BoredResponse>();
+
+        public GeneratorForm()
         {
             InitializeComponent();
         }
@@ -23,7 +27,7 @@ namespace BoredAPIGen
             List<string> Options = new List<string>();
 
             Options.Add(cbxActivities.SelectedItem.ToString().ToLower());
-            Options.Add(trbPrice.Value.ToString());
+            Options.Add((trbPrice.Value / 10).ToString());
             RequestAPI(Options);
         }
 
@@ -72,7 +76,55 @@ namespace BoredAPIGen
                     // Update the user interface with the data returned. 
                     // This method also shows the user an error, if there is one
                     // These errors are generally things the user can fix, for example, no internet connection
-                    Debug.WriteLine(response, error);
+                    currentActivity = response;
+                    lblActivity.Text = currentActivity.Activity.ToString();
+                    lblType.Text = currentActivity.Type.ToString();
+
+
+                    switch (currentActivity.Price)
+                    {
+                        case decimal n when n >= 1.0m:
+                            {
+                                lblPrice.Text = "Expensive";
+                            };
+                            break;
+                        case decimal n when n <= 0.5m:
+                            {
+                                lblPrice.Text = "Pricy";
+                            };
+                            break;
+                        case decimal n when n <= 0.3m:
+                            {
+                                lblPrice.Text = "Cheap";
+                            };
+                            break;
+                        case decimal n when n == 0.0m:
+                            {
+                                lblPrice.Text = "Free";
+                            };
+                            break;
+                    }
+
+                    switch (currentActivity.Accessibility)
+                    {
+                        case decimal n when n >= 1.0m:
+                            {
+                                lblAccessible.Text = "Difficult";
+                            };
+                            break;
+                        case decimal n when n <= 0.5m:
+                            {
+                                lblAccessible.Text = "Challenging";
+                            };
+                            break;
+                        case decimal n when n == 0.0m:
+                            {
+                                lblAccessible.Text = "Easy";
+                            };
+                            break;
+                    }
+
+                    lblPeople.Text = currentActivity.Participants.ToString();
                 }
                 catch (Exception err)
                 {
@@ -81,6 +133,20 @@ namespace BoredAPIGen
                     MessageBox.Show($"Unexpected data returned from API request", "Error");
                 }
             }
+        }
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            SavedActivities.Add(currentActivity);
+        }
+
+        private void btnClose_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void trbPeople_Scroll(object sender, EventArgs e)
+        {
+            lblPeopleBar.Text = (trbPeople.Value / 10).ToString();
         }
     }
 }

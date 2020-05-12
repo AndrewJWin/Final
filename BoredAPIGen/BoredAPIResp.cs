@@ -5,8 +5,8 @@ using System.Text.Json.Serialization;
 
 namespace BoredAPIGen
 {
-
-	class BoredPriceResponseConverter : JsonConverter<Decimal>
+	// Following JsonConverter provided by Clara James | 5/12/2020. - Much appreciated.
+	class BoredResponseDecimalConverter : JsonConverter<Decimal>
 	{
 		public override decimal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 		{
@@ -17,7 +17,7 @@ namespace BoredAPIGen
 			}
 			catch 
 			{
-				return 0m; // or whatever default you'd like 
+				return 0m;
 			}
 
 		}
@@ -25,7 +25,7 @@ namespace BoredAPIGen
 		public override void Write(Utf8JsonWriter writer, Decimal value, JsonSerializerOptions options)
 		{
 			throw new NotImplementedException();  
-			// You don't need this if you don't plan to create JSON from your C# objects
+			// Unused as we're not building JSON Objects.
 		}
 	}
 	class BoredResponse
@@ -38,19 +38,20 @@ namespace BoredAPIGen
 
 		public string Activity { get; set; }
 		public string Type { get; set; }
-
-		[JsonConverter(typeof(BoredPriceResponseConverter))]
-		public decimal Price { get; set; }
 		public string Link { get; set; }
 		public string Key { get; set; }
+		
+		// The following utilizes the JsonConverter to ensure the value provided is a correct decimal value.
 
-		public override string ToString()
-		{
-			return $"ACTIVITY: {Activity} \n" +
-				$"TYPE: {Type} \n" +
-				$"PRICE: {Price}\n" +
-				$"LINK: {Link}" +
-				$"KEY: {Key}";
-		}
+		[JsonConverter(typeof(BoredResponseDecimalConverter))]
+		public decimal Price { get; set; }
+
+		[JsonConverter(typeof(BoredResponseDecimalConverter))]
+		public decimal Accessibility { get; set; }
+
+
+		[JsonConverter(typeof(BoredResponseDecimalConverter))]
+		public decimal Participants { get; set; }
+
 	}
 }
