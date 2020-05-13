@@ -35,7 +35,8 @@ namespace BoredAPIGen
 	 * When a response is made to APOD, the JSON response is deserialized - converted into an APODResponse C# object
 	 * The data in each property in the APODResponse comes from the matching JSON response property names. 
      */
-
+		
+		public string Error { get; set; }
 		public string Activity { get; set; }
 		public string Type { get; set; }
 		public string Link { get; set; }
@@ -53,5 +54,24 @@ namespace BoredAPIGen
 		[JsonConverter(typeof(BoredResponseDecimalConverter))]
 		public decimal Participants { get; set; }
 
+		// ShowWebPage Method, takes in a plantName for a requested plant information - Otherwise show the default homepage.
+		public void showLink()
+		{
+
+			if (Link != "")
+			{
+				Debug.WriteLine(Link);
+				// Uses the system Processes to start the default browser with the requested Webpage.
+				Process.Start(Link);
+			}
+		}
+
+		public string shortActivity()
+		{
+			int maxLength = 25;
+
+			return Activity.Length <= maxLength ? Activity : Activity.Substring(0, maxLength) + "...";
+
+		}
 	}
 }

@@ -15,20 +15,34 @@ namespace BoredAPIGen
     {
 
         BoredResponse currentActivity;
-        List<BoredResponse> SavedActivities = new List<BoredResponse>();
+        private List<BoredResponse> SavedActivities = new List<BoredResponse>();
+
 
         public GeneratorForm()
         {
             InitializeComponent();
+
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnSubmit_Click(object sender, EventArgs e)
         {
             List<string> Options = new List<string>();
+            lblLink.Enabled = false;
+            lblLink.Visible = false;
 
-            Options.Add(cbxActivities.SelectedItem.ToString().ToLower());
-            Options.Add((trbPrice.Value / 10).ToString());
-            RequestAPI(Options);
+            if (cbxActivities.SelectedIndex == -1)
+            {
+                MessageBox.Show("Selected Type cannot be empty!", "Missing Selection");
+                cbxActivities.Focus();
+            }
+            else
+            {
+
+                Options.Add(cbxActivities.SelectedItem.ToString().ToLower());
+                Options.Add((Decimal.Parse(trbPrice.Value.ToString()) / 10m).ToString());
+                Options.Add((Decimal.Parse(trbDifficulty.Value.ToString()) / 10m).ToString());
+                RequestAPI(Options);
+            }
         }
 
         private void RequestAPI(List<string> Options)
@@ -76,55 +90,69 @@ namespace BoredAPIGen
                     // Update the user interface with the data returned. 
                     // This method also shows the user an error, if there is one
                     // These errors are generally things the user can fix, for example, no internet connection
-                    currentActivity = response;
-                    lblActivity.Text = currentActivity.Activity.ToString();
-                    lblType.Text = currentActivity.Type.ToString();
-
-
-                    switch (currentActivity.Price)
+                    if (response == null)
                     {
-                        case decimal n when n >= 1.0m:
-                            {
-                                lblPrice.Text = "Expensive";
-                            };
-                            break;
-                        case decimal n when n <= 0.5m:
-                            {
-                                lblPrice.Text = "Pricy";
-                            };
-                            break;
-                        case decimal n when n <= 0.3m:
-                            {
-                                lblPrice.Text = "Cheap";
-                            };
-                            break;
-                        case decimal n when n == 0.0m:
-                            {
-                                lblPrice.Text = "Free";
-                            };
-                            break;
+                        MessageBox.Show(error.ToString(), "API Error");
                     }
-
-                    switch (currentActivity.Accessibility)
+                    else
                     {
-                        case decimal n when n >= 1.0m:
-                            {
-                                lblAccessible.Text = "Difficult";
-                            };
-                            break;
-                        case decimal n when n <= 0.5m:
-                            {
-                                lblAccessible.Text = "Challenging";
-                            };
-                            break;
-                        case decimal n when n == 0.0m:
-                            {
-                                lblAccessible.Text = "Easy";
-                            };
-                            break;
-                    }
+                        currentActivity = response;
+                        lblActivity.Text = currentActivity.Activity;
+                        lblType.Text = currentActivity.Type.Remove(1).ToUpper() + currentActivity.Type.Substring(1); ;
 
-                    lblPeople.Text = currentActivity.Participants.ToString();
+
+                        switch (currentActivity.Price)
+                        {
+                            case decimal n when n >= 1.0m:
+                                {
+                                    lblPrice.Text = "Expensive";
+                                };
+                                break;
+                            case decimal n when n <= 0.5m:
+                                {
+                                    lblPrice.Text = "Pricy";
+                                };
+                                break;
+                            case decimal n when n <= 0.3m:
+                                {
+                                    lblPrice.Text = "Cheap";
+                                };
+                                break;
+                            case decimal n when n == 0.0m:
+                                {
+                                    lblPrice.Text = "Free";
+                                };
+                                break;
+                        }
+
+                        switch (currentActivity.Accessibility)
+                        {
+                            case decimal n when n >= 1.0m:
+                                {
+                                    lblAccessible.Text = "Difficult";
+                                };
+                                break;
+                            case decimal n when n <= 0.5m:
+                                {
+                                    lblAccessible.Text = "Challenging";
+                                };
+                                break;
+                            case decimal n when n == 0.0m:
+                                {
+                                    lblAccessible.Text = "Easy";
+                                };
+                                break;
+                        }
+
+                        if (currentActivity.Link != "")
+                        {
+                            lblLink.Visible = true;
+                            lblLink.Enabled = true;
+                        }
+
+                        lblPeople.Text = currentActivity.Participants.ToString();
+
+                    }
                 }
                 catch (Exception err)
                 {
@@ -134,19 +162,60 @@ namespace BoredAPIGen
                 }
             }
         }
-        private void btnSave_Click(object sender, EventArgs e)
-        {
-            SavedActivities.Add(currentActivity);
-        }
 
         private void btnClose_Click(object sender, EventArgs e)
         {
             Close();
         }
 
-        private void trbPeople_Scroll(object sender, EventArgs e)
+        private void addActivity(BoredResponse Activity)
         {
-            lblPeopleBar.Text = (trbPeople.Value / 10).ToString();
+            if (Activity != null)
+            {
+
+            SavedActivities.Add(Activity);
+
+            lstSaved.Items.Clear();
+
+            SavedActivities.ForEach(activity => { lstSaved.Items.Add(activity.shortActivity()); });
+
+            }
         }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            if (SavedActivities.Exists(activity => activity.Activity == currentActivity.Activity))
+            {
+                MessageBox.Show("Activity is already saved!", "Saving Error");
+            }
+            else
+            {
+                addActivity(currentActivity);
+            }
+        }
+
+        private void lblLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            currentActivity.showLink();
+        }
+
+        private void btnList_Click(object sender, EventArgs e)
+        {
+            if (SavedActivities.Count == 0)
+            {
+                MessageBox.Show("There is no saved Activities to view.", "Missing Activities");
+            }
+            else
+            {
+                // Create the form.
+                savedActivityForm frmSavedActivities = new savedActivityForm();
+                // Set the tag as the saved activities list.
+                frmSavedActivities.Tag = SavedActivities;
+
+                // Show the form as a new window.
+                frmSavedActivities.ShowDialog();
+            }        
+        }
+
     }
 }

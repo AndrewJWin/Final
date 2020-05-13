@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text.Json;
 
 namespace BoredAPIGen
@@ -15,7 +16,7 @@ namespace BoredAPIGen
                 using (client)
                 {
                 // URL for making APIs requests to the BoredAPI service, this requests a selected activity.
-                    string url = $"http://www.boredapi.com/api/activity/?type={Options[0]}&minprice=0&maxprice={Options[1]}";
+                    string url = $"http://www.boredapi.com/api/activity/?type={Options[0]}&minprice=0&maxprice={Options[1]}&minaccessibility=0&maxaccessibility={Options[2]}";
 
                     try
                     {
@@ -41,6 +42,8 @@ namespace BoredAPIGen
 
                         // For troubleshooting
                         Debug.WriteLine(response);
+                        
+                        if (response.Error == "No activities found with the specified parameters") throw new Exception("No activities found with the specified parameters");
 
                         // Everything seems to have worked, set errorMessage to null 
                         // and return response containing all the APOD data
@@ -51,18 +54,15 @@ namespace BoredAPIGen
                     catch (WebException we)
                     {
                         // Catch various connectivity problems
-                        errorMessage = "Error fetching data from API because " + we.Message;
+                        errorMessage = "Error fetching data from API because:\n" + we.Message;
+                    return null;
                     }
                     catch (Exception ex)
                     {
                         // And for other things that may go wrong. 
-                        errorMessage = "Unexpected Exception with message " + ex.Message;
+                        errorMessage = "Unexpected Exception with message:\n" + ex.Message;
+                    return null;
                     }
-
-                    // For troubleshooting
-                    Debug.WriteLine($"Error fetching data from API because {errorMessage}");
-
-                    return null;   // Caller will be able to check for a null return value, to test if request was not succesful
                 }
             }
     }
