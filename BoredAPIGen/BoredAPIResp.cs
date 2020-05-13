@@ -10,18 +10,18 @@ namespace BoredAPIGen
 	{
 		public override decimal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 		{
-			try
-			{
-				decimal data = reader.GetDecimal();
-				return data; 
-			}
-			catch 
-			{
-				return 0m;
-			}
-
+				try
+				{
+					decimal data = reader.GetDecimal();
+					return data;
+				}
+				catch
+				{
+					return 0m;
+				}
 		}
 
+		// Write method, unused - Should not be run in any extent.
 		public override void Write(Utf8JsonWriter writer, Decimal value, JsonSerializerOptions options)
 		{
 			throw new NotImplementedException();  
@@ -31,12 +31,15 @@ namespace BoredAPIGen
 	class BoredResponse
     {
 	/* 
-	 * This class has properties that match the properties in a JSON response from the APOD server. 
-	 * When a response is made to APOD, the JSON response is deserialized - converted into an APODResponse C# object
-	 * The data in each property in the APODResponse comes from the matching JSON response property names. 
+	 * This class has properties that match the properties in a JSON response from the API. 
+	 * When a response is made from the server, the JSON response is deserialized - converted into an BoredResponse C# object
+	 * The data in each property in the BoredResponse comes from the matching JSON response property names. 
      */
 		
+		// The following property is set for catching errors and should remain null as long as valid input is recieved.
 		public string Error { get; set; }
+
+		// The following properties are basic properties set by the deserialized JSON input.
 		public string Activity { get; set; }
 		public string Type { get; set; }
 		public string Link { get; set; }
@@ -50,26 +53,27 @@ namespace BoredAPIGen
 		[JsonConverter(typeof(BoredResponseDecimalConverter))]
 		public decimal Accessibility { get; set; }
 
-
 		[JsonConverter(typeof(BoredResponseDecimalConverter))]
 		public decimal Participants { get; set; }
 
-		// ShowWebPage Method, takes in a plantName for a requested plant information - Otherwise show the default homepage.
+
+		// showLink method, shows the webpage attached to this specific Activity.
 		public void showLink()
 		{
-
+			// Validating if the link is blank - Though this should never occur as the link label should be disabled.
 			if (Link != "")
 			{
-				Debug.WriteLine(Link);
-				// Uses the system Processes to start the default browser with the requested Webpage.
+				// Uses Process to start the default browser to open the link.
 				Process.Start(Link);
 			}
 		}
 
+		// shortActivity method, reduces the overall length of the activity for use in a saved list.
 		public string shortActivity()
 		{
 			int maxLength = 25;
 
+			// The following line effectively substrings from the full length to the maximum length and adds elipses to the end.
 			return Activity.Length <= maxLength ? Activity : Activity.Substring(0, maxLength) + "...";
 
 		}
